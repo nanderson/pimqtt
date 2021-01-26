@@ -7,5 +7,5 @@ Pi to MQTT
 - Use PiCamera (respond on different topic)
 
 To-Do:
-- [] upgrade to python3
-- [] more general purpose installer script
+- [ ] upgrade to python3
+- [ ] more general purpose installer script
