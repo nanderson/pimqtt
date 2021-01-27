@@ -1,0 +1,17 @@
+[mqtt_host]
+host = "localhost"
+port = 1234
+auth = true
+username = ""
+password = ""
+
+[mqtt_data]
+command_topic = ""
+response_topic = ""
+heartbeat_frequency = 0
+
+[pi_camera]
+enabled = false
+response_topic = ""
+temp_folder = ""
+image_cache_retention = 5
