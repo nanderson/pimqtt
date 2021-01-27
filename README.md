@@ -40,7 +40,7 @@ The idea for this was inspired by the building of a remotely installed RPi that 
 - heartbeat frequency in minutes (0 = disable)
 
 
-#Thanks go to
+# Inspiration from:
 - Install script inspired by https://gist.github.com/m-radzikowski/53e0b39e9a59a1518990e76c2bff8038
 - Basics of the mqtt code inspired by: https://www.hackster.io/robin-cole/pi-camera-doorbell-with-notifications-408d3d
 - Systemd confis stuff from: https://tecadmin.net/setup-autorun-python-script-using-systemd/

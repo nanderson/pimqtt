@@ -110,6 +110,21 @@ fi
 
 # now do the install
 
+
+if [ -f "/etc/pimqtt.conf" ]
+then
+  msg "It looks like /etc/pimqtt.conf already exists, not overwriting"
+else
+  cp pimqtt.conf.default /etc/pimqtt.conf
+  msg "The default pimqtt.conf copied to /etc: ${GREEN}CHECK${NOFORMAT}"
+  msg "    Make sure to edit /etc/pimqtt.py before starting the service"
+fi
+
+cp pimqtt.py /usr/local/bin
+chmod u+x /usr/local/bin/pimqtt.py
+msg "pimqtt.py copied: ${GREEN}CHECK${NOFORMAT}"
+msg "    Make sure to edit /etc/pimqtt.py before starting the service"
+
 cp $SYSTEMD_CONFIG $SYSTEMD_DIR
 msg "Systemd config file copied: ${GREEN}CHECK${NOFORMAT}"
 
@@ -119,17 +134,17 @@ msg "Systemd reloaded: ${GREEN}CHECK${NOFORMAT}"
 systemctl enable pimqtt.service
 msg "Systemd pimqtt enabled: ${GREEN}CHECK${NOFORMAT}"
 
-systemctl restart pimqtt.service
-msg "Systemd pimqtt restarted: ${GREEN}CHECK${NOFORMAT}"
+#systemctl restart pimqtt.service
+#msg "Systemd pimqtt restarted: ${GREEN}CHECK${NOFORMAT}"
 
 # TODO:
 # install cron.d
-# install config file if not present
 # pip3 install whatever is needed, global install (ugly but it works)
 #   paho picamera
 
 
 msg "${GREEN}Install Complete${NOFORMAT}"
+msg "Make sure to edit /etc/pimqtt.conf and then ${GREEN}systemctl start pimqtt.service${NOFORMAT}"
 
 
 #msg "${RED}Read parameters:${NOFORMAT}"
