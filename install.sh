@@ -125,6 +125,9 @@ chmod u+x /usr/local/bin/pimqtt.py
 msg "pimqtt.py copied: ${GREEN}CHECK${NOFORMAT}"
 msg "    Make sure to edit /etc/pimqtt.py before starting the service"
 
+pip3 install paho-mqtt picamera
+msg "pip3 requirements installed: ${GREEN}CHECK${NOFORMAT}"
+
 cp $SYSTEMD_CONFIG $SYSTEMD_DIR
 msg "Systemd config file copied: ${GREEN}CHECK${NOFORMAT}"
 
@@ -139,8 +142,6 @@ msg "Systemd pimqtt enabled: ${GREEN}CHECK${NOFORMAT}"
 
 # TODO:
 # install cron.d
-# pip3 install whatever is needed, global install (ugly but it works)
-#   paho picamera
 
 
 msg "${GREEN}Install Complete${NOFORMAT}"
