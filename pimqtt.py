@@ -91,7 +91,8 @@ def process_trigger(payload):
             #camera = picamera.PiCamera()
             camera.hflip = False
             camera.vflip = False
-            camera.led = False
+            # disabling because of: picamera.exc.PiCameraRuntimeError: GPIO library not found, or not accessible; please install RPi.GPIO and run the script as root
+            #camera.led = False
             # Valid values are 0, 90, 180, and 270
             camera.rotation = 0
             camera.led = False
