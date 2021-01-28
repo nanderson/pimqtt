@@ -100,7 +100,7 @@ def process_trigger(payload):
                 myFile = imageFile.read()
                 data = bytearray(myFile)
 
-            client.publish(CAMERA_TOPIC_BASE + file_name, data, mqttQos, mqttRetained)
+            client.publish(CAMERA_TOPIC_BASE + "/" + file_name, data, mqttQos, mqttRetained)
 
             response = {}
             response["get-photo"] = file_name
