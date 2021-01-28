@@ -14,6 +14,7 @@ import configparser
 import ssl
 import platform
 import psutil
+import socket
 import json
 
 logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
@@ -52,6 +53,11 @@ def get_size(bytes, suffix="B"):
             return f"{bytes:.2f}{unit}{suffix}"
         bytes /= factor
 
+af_map = {
+    socket.AF_INET: 'IPv4',
+    socket.AF_INET6: 'IPv6',
+    psutil.AF_LINK: 'MAC',
+}
 
 def process_trigger(payload): 
     logging.info('ON triggered') 
@@ -143,14 +149,10 @@ def process_trigger(payload):
         for interface_name, interface_addresses in if_addrs.items():
             for address in interface_addresses:
                 response["net"][interface_name] = {}
-                if str(address.family) == 'AddressFamily.AF_INET':
-                    response["net"][interface_name]["ip_address"] = address.address
-                    response["net"][interface_name]["netmask"] = address.netmask
-                    response["net"][interface_name]["broadcast_ip"] = address.broadcast
-                elif str(address.family) == 'AddressFamily.AF_PACKET':
-                    response["net"][interface_name]["mac_address"] = address.address
-                    response["net"][interface_name]["netmask"] = address.netmask
-                    response["net"][interface_name]["broadcast_mac"] = address.broadcast
+                response["net"][interface_name]["family"] = af_map.get(address.family)
+                response["net"][interface_name]["address"] = f"{address.address}"
+                response["net"][interface_name]["netmask"] = f"{address.netmask}"
+                response["net"][interface_name]["broadcast"] = f"{address.broadcast}"
         net_io = psutil.net_io_counters()
         response["net"]["total_bytes_sent"] = f"{get_size(net_io.bytes_sent)}"
         response["net"]["total_bytes_received"] = f"{get_size(net_io.bytes_recv)}"
