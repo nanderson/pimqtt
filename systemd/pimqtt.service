@@ -8,6 +8,8 @@ Type=simple
 ExecStart=/usr/bin/python3 /usr/local/bin/pimqtt.py
 StandardInput=tty-force
 Environment=PYTHONUNBUFFERED=1
+StandardOutput=syslog+console
+StandardError=syslog+console
 
 [Install]
 WantedBy=multi-user.target

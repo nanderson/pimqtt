@@ -189,6 +189,9 @@ def process_trigger(payload):
         response["net"]["total_bytes_sent"] = f"{get_size(net_io.bytes_sent)}"
         response["net"]["total_bytes_received"] = f"{get_size(net_io.bytes_recv)}"
 
+        # To-Do: Add picamera status
+        # To-Do: Add other temperature sensors
+
         client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
     elif payload=='reboot':
         logging.info("COMMAND: reboot")
