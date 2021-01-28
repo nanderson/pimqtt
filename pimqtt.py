@@ -15,14 +15,18 @@ import platform
 import psutil
 import socket
 import json
+
+logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
+
 try:
     import picamera 
+    logging.info("Successfully imported picamera")
 except ImportError:
-    # must not be on a pi, need to disable the camera in the config
+    # must not be on a pi or can't find library, need to disable the camera in the config
+    logging.error("Error importing picamera")
     pass
 
 
-logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
 
 config = configparser.ConfigParser()
 config.read('/etc/pimqtt.conf')
