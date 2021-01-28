@@ -147,12 +147,12 @@ def process_trigger(payload):
         response["net"] = {}
         if_addrs = psutil.net_if_addrs()
         for interface_name, interface_addresses in if_addrs.items():
+            response["net"][interface_name] = {}
             for address in interface_addresses:
-                response["net"][interface_name] = {}
-                response["net"][interface_name]["family"] = af_map.get(address.family)
-                response["net"][interface_name]["address"] = f"{address.address}"
-                response["net"][interface_name]["netmask"] = f"{address.netmask}"
-                response["net"][interface_name]["broadcast"] = f"{address.broadcast}"
+                response["net"][interface_name][af_map.get(address.family)] = {}
+                response["net"][interface_name][af_map.get(address.family)]["address"] = f"{address.address}"
+                response["net"][interface_name][af_map.get(address.family)]["netmask"] = f"{address.netmask}"
+                response["net"][interface_name][af_map.get(address.family)]["broadcast"] = f"{address.broadcast}"
         net_io = psutil.net_io_counters()
         response["net"]["total_bytes_sent"] = f"{get_size(net_io.bytes_sent)}"
         response["net"]["total_bytes_received"] = f"{get_size(net_io.bytes_recv)}"
