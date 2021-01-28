@@ -3,7 +3,6 @@
 # combine the MQTT and RF receive codes 
 import paho.mqtt.client as mqtt 
 import paho.mqtt.publish as publish 
-#import picamera 
 import sys 
 import random
 import time 
@@ -16,6 +15,12 @@ import platform
 import psutil
 import socket
 import json
+try:
+    import picamera 
+except ImportError:
+    # must not be on a pi, need to disable the camera in the config
+    pass
+
 
 logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
 
@@ -68,13 +73,40 @@ def process_trigger(payload):
         client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
     elif payload=='get-photo':
         logging.info("COMMAND: get-photo")
-        response = {}
-        response["camera"] = "To-Do: Implement camera"
+
         if CAMERA_ENABLED:
-            response["enabled"] = True
+            file_name = 'image_' + str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")) + '.jpg'
+            try:
+                camera = picamera.PiCamera()
+                camera.hflip = False
+                camera.vflip = False
+                camera.led = False
+                # Valid values are 0, 90, 180, and 270
+                camera.rotation = 0
+                camera.led = False
+                camera.capture(file_name)
+                camera.led = False
+                with open(file_name, "rb") as imageFile:
+                    myFile = imageFile.read()
+                    data = bytearray(myFile)
+
+                client.publish(CAMERA_TOPIC_BASE + file_name, data, mqttQos, mqttRetained)
+
+                response = {}
+                response["get-photo"] = file_name
+                client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+                logging.info(file_name + ' image published')
+            except PiCameraError as err:
+                # some error
+                response = {}
+                response["get-photo"] = err
+                client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+                logging.info('get-photo exception: ' + err)
         else:
-            response["enabled"] = False
-        client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+            response = {}
+            response["get-photo"] = "disabled"
+            client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+            logging.info('get-photo disabled')
     elif payload=='status':
         logging.info("COMMAND: status")
         response = {}
