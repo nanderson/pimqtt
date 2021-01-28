@@ -95,9 +95,7 @@ def process_trigger(payload):
             #camera.led = False
             # Valid values are 0, 90, 180, and 270
             camera.rotation = 0
-            camera.led = False
             camera.capture(file_name)
-            camera.led = False
             with open(file_name, "rb") as imageFile:
                 myFile = imageFile.read()
                 data = bytearray(myFile)
