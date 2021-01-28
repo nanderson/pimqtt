@@ -86,6 +86,25 @@ def process_trigger(payload):
         response["cpu"] = {}
         response["cpu"]["physical_cores"] = psutil.cpu_count(logical=False)
         response["cpu"]["total_cores"] = psutil.cpu_count(logical=True)
+        #try:
+        #    cputemp = psutil.sensors_temperatures(fahrenheit=True)
+        #    response["cpu"]["temperature"] = f"{psutil.sensors_temperatures(fahrenheit=True)}°F"
+        #except AttributeError:
+        #    # only RPIs seem to have this
+        #    continue
+        response["cpu"]["temperatures"] = {}
+        if hasattr(psutil, "sensors_temperatures"):
+            temps = psutil.sensors_temperatures(fahrenheit=True)
+            if temps:
+                for name, entries in temps.items():
+                    response["cpu"]["temperatures"][name] = {}
+                    for entry in entries:
+                        response["cpu"]["temperatures"][name][entry.label or name] = {}
+                        response["cpu"]["temperatures"][name][entry.label or name]["current"] = f"{entry.current}°F"
+                        response["cpu"]["temperatures"][name][entry.label or name]["high"] = f"{entry.high}°F"
+                        response["cpu"]["temperatures"][name][entry.label or name]["critical"] = f"{entry.critical}°F"
+                        #print("    %-20s %s °F (high = %s °F, critical = %s °F)" % (entry.label or name, entry.current, entry.high, entry.critical))
+
         cpufreq = psutil.cpu_freq()
         response["cpu"]["max_frequency"] = f"{cpufreq.max:.2f}Mhz"
         response["cpu"]["min_frequency"] = f"{cpufreq.min:.2f}Mhz"
