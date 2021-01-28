@@ -27,6 +27,14 @@ except ImportError:
     pass
 
 
+try:
+    camera = picamera.PiCamera()
+except NameError:
+    pass
+except PiCameraError as err:
+    logging.error("Error loading picamera: " + err)
+    camera = False
+    pass
 
 config = configparser.ConfigParser()
 config.read('/etc/pimqtt.conf')
@@ -78,34 +86,27 @@ def process_trigger(payload):
     elif payload=='get-photo':
         logging.info("COMMAND: get-photo")
 
-        if CAMERA_ENABLED:
+        if CAMERA_ENABLED and camera:
             file_name = 'image_' + str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")) + '.jpg'
-            try:
-                camera = picamera.PiCamera()
-                camera.hflip = False
-                camera.vflip = False
-                camera.led = False
-                # Valid values are 0, 90, 180, and 270
-                camera.rotation = 0
-                camera.led = False
-                camera.capture(file_name)
-                camera.led = False
-                with open(file_name, "rb") as imageFile:
-                    myFile = imageFile.read()
-                    data = bytearray(myFile)
+            #camera = picamera.PiCamera()
+            camera.hflip = False
+            camera.vflip = False
+            camera.led = False
+            # Valid values are 0, 90, 180, and 270
+            camera.rotation = 0
+            camera.led = False
+            camera.capture(file_name)
+            camera.led = False
+            with open(file_name, "rb") as imageFile:
+                myFile = imageFile.read()
+                data = bytearray(myFile)
 
-                client.publish(CAMERA_TOPIC_BASE + file_name, data, mqttQos, mqttRetained)
+            client.publish(CAMERA_TOPIC_BASE + file_name, data, mqttQos, mqttRetained)
 
-                response = {}
-                response["get-photo"] = file_name
-                client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
-                logging.info(file_name + ' image published')
-            except PiCameraError as err:
-                # some error
-                response = {}
-                response["get-photo"] = err
-                client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
-                logging.info('get-photo exception: ' + err)
+            response = {}
+            response["get-photo"] = file_name
+            client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+            logging.info(file_name + ' image published')
         else:
             response = {}
             response["get-photo"] = "disabled"
