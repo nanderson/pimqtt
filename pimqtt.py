@@ -86,12 +86,6 @@ def process_trigger(payload):
         response["cpu"] = {}
         response["cpu"]["physical_cores"] = psutil.cpu_count(logical=False)
         response["cpu"]["total_cores"] = psutil.cpu_count(logical=True)
-        #try:
-        #    cputemp = psutil.sensors_temperatures(fahrenheit=True)
-        #    response["cpu"]["temperature"] = f"{psutil.sensors_temperatures(fahrenheit=True)}°F"
-        #except AttributeError:
-        #    # only RPIs seem to have this
-        #    continue
         response["cpu"]["temperatures"] = {}
         if hasattr(psutil, "sensors_temperatures"):
             temps = psutil.sensors_temperatures(fahrenheit=True)
@@ -103,7 +97,6 @@ def process_trigger(payload):
                         response["cpu"]["temperatures"][name][entry.label or name]["current"] = f"{entry.current}°F"
                         response["cpu"]["temperatures"][name][entry.label or name]["high"] = f"{entry.high}°F"
                         response["cpu"]["temperatures"][name][entry.label or name]["critical"] = f"{entry.critical}°F"
-                        #print("    %-20s %s °F (high = %s °F, critical = %s °F)" % (entry.label or name, entry.current, entry.high, entry.critical))
 
         cpufreq = psutil.cpu_freq()
         response["cpu"]["max_frequency"] = f"{cpufreq.max:.2f}Mhz"
@@ -127,21 +120,20 @@ def process_trigger(payload):
         response["memory"]["swap_percentage"] = f"{swap.percent}%"
         
         response["disk"] = {}
-        # To-Do: get this working
-        #partitions = psutil.disk_partitions()
-        #for partition in partitions:
-        #    print(f"=== Device: {partition.device} ===")
-        #    print(f"  Mountpoint: {partition.mountpoint}")
-        #    print(f"  File system type: {partition.fstype}")
-        #    try:
-        #        partition_usage = psutil.disk_usage(partition.mountpoint)
-        #    except PermissionError:
-        #        # this can be catched due to the disk that isn't ready
-        #        continue
-        #    print(f"  Total Size: {get_size(partition_usage.total)}"
-        #    print(f"  Used: {get_size(partition_usage.used)}"
-        #    print(f"  Free: {get_size(partition_usage.free)}"
-        #    print(f"  Percentage: {partition_usage.percent}%"
+        partitions = psutil.disk_partitions()
+        for partition in partitions:
+            response["disk"][partition.device] = {}
+            response["disk"][partition.device]["mountpoint"] = partition.mountpoint
+            response["disk"][partition.device]["fstype"] = partition.fstype
+            try:
+                partition_usage = psutil.disk_usage(partition.mountpoint)
+                response["disk"][partition.device]["total_size"] = get_size(partition_usage.total)
+                response["disk"][partition.device]["used"] = get_size(partition_usage.used)
+                response["disk"][partition.device]["free"] = get_size(partition_usage.free)
+                response["disk"][partition.device]["percentage"] = f"{partition_usage.percent}%"
+            except PermissionError:
+                # this can be catched due to the disk that isn't ready
+                continue
         disk_io = psutil.disk_io_counters()
         response["disk"]["total_read"] = f"{get_size(disk_io.read_bytes)}"
         response["disk"]["total_write"] = f"{get_size(disk_io.write_bytes)}"
