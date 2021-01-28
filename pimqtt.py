@@ -16,7 +16,7 @@ import ssl
 logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
 
 config = configparser.ConfigParser()
-config.read('pimqtt.conf')
+config.read('/etc/pimqtt.conf')
 MQTT_HOST = config.get("mqtt_host", "host")
 MQTT_PORT = int(config.get("mqtt_host", "port"))
 MQTT_TLS = config.getboolean("mqtt_host", "tls")
@@ -50,7 +50,10 @@ def process_trigger(payload):
         client.publish(RESPONSE_TOPIC_BASE, "pong", mqttQos, mqttRetained)
     elif payload=='get-photo':
         logging.info("COMMAND: get-photo")
-        client.publish(RESPONSE_TOPIC_BASE, "To-Do: implement photos", mqttQos, mqttRetained)
+        if CAMERA_ENABLED:
+            client.publish(RESPONSE_TOPIC_BASE, "To-Do: implement photos (ENABLED)", mqttQos, mqttRetained)
+        else:
+            client.publish(RESPONSE_TOPIC_BASE, "To-Do: implement photos (DISABLED)", mqttQos, mqttRetained)
     elif payload=='status':
         logging.info("COMMAND: status")
         client.publish(RESPONSE_TOPIC_BASE, "To-Do: implement status", mqttQos, mqttRetained)
