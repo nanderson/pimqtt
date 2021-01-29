@@ -92,7 +92,7 @@ def process_trigger(payload):
             camera.hflip = False
             camera.vflip = False
             # disabling because of: picamera.exc.PiCameraRuntimeError: GPIO library not found, or not accessible; please install RPi.GPIO and run the script as root
-            #camera.led = False
+            camera.led = False
             # Valid values are 0, 90, 180, and 270
             camera.rotation = 0
             camera.capture(file_name)
@@ -190,8 +190,14 @@ def process_trigger(payload):
                 response["net"][interface_name][af_map.get(address.family)]["netmask"] = f"{address.netmask}"
                 response["net"][interface_name][af_map.get(address.family)]["broadcast"] = f"{address.broadcast}"
         net_io = psutil.net_io_counters()
-        response["net"]["total_bytes_sent"] = f"{get_size(net_io.bytes_sent)}"
-        response["net"]["total_bytes_received"] = f"{get_size(net_io.bytes_recv)}"
+        response["net"]["total_bytes_sent"] = net_io.bytes_sent
+        response["net"]["total_bytes_recv"] = net_io.bytes_recv
+        response["net"]["total_packets_sent"] = net_io.packets_sent
+        response["net"]["total_packets_recv"] = net_io.packets_recv
+        response["net"]["total_errin"] = net_io.errin
+        response["net"]["total_errout"] = net_io.errout
+        response["net"]["total_dropin"] = net_io.dropin
+        response["net"]["total_dropout"] = net_io.dropout
 
         # To-Do: Add picamera status
         # To-Do: Add other temperature sensors
