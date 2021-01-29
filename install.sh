@@ -123,7 +123,7 @@ fi
 cp pimqtt.py /usr/local/bin
 chmod u+x /usr/local/bin/pimqtt.py
 msg "pimqtt.py copied: ${GREEN}CHECK${NOFORMAT}"
-msg "    Make sure to edit /etc/pimqtt.py before starting the service"
+msg "    Make sure to edit /etc/pimqtt.conf before starting the service"
 
 pip3 install paho-mqtt picamera psutil
 msg "pip3 requirements installed: ${GREEN}CHECK${NOFORMAT}"
