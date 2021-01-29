@@ -11,14 +11,22 @@ The idea for this was inspired by the building of a remotely installed RPi that 
 - Use PiCamera (respond on different topic)
 
 
+# Installation
+- sudo install.sh
+- edit /etc/pimqtt.conf
+- apt-get install rpi.gpio
+- systemctl start pimqtt.service
+
+
 # To-Do:
-- [ ] proper (re)installer script
-- [ ] upgrade to python3
-- [ ] more general purpose installer script
-- [ ] proper config file
-- [ ] better logging, not just stdout
-- [ ] more generic commands (see below)
 - [ ] mqtt birth & death messsages
+- [ ] installer argument to skip pip3 installs
+- [ ] move logging config into config file
+- [ ] implement missing commands
+- [ ] implement scheduled data purging
+- [ ] implement periodic simple health messages
+- [ ] investigate service auto-restart?
+- [ ] add a "hello" message when the service starts
 
 
 # commands to listen for:
