@@ -88,6 +88,7 @@ def process_trigger(payload):
 
         if CAMERA_ENABLED and camera:
             file_name = 'image_' + str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")) + '.jpg'
+            full file_name = CAMERA_IMAGE_PATH + "/" + file_name
             #camera = picamera.PiCamera()
             camera.hflip = False
             camera.vflip = False
@@ -95,7 +96,7 @@ def process_trigger(payload):
             camera.led = False
             # Valid values are 0, 90, 180, and 270
             camera.rotation = 0
-            camera.capture(file_name)
+            camera.capture(full_file_name)
             with open(file_name, "rb") as imageFile:
                 myFile = imageFile.read()
                 data = bytearray(myFile)
@@ -105,7 +106,7 @@ def process_trigger(payload):
             response = {}
             response["get-photo"] = file_name
             client.publish(RESPONSE_TOPIC_BASE + "/get-photo", json.dumps(response), mqttQos, mqttRetained)
-            logging.info(file_name + ' image published')
+            logging.info(full_file_name + ' image published')
         else:
             response = {}
             response["get-photo"] = "disabled"
