@@ -28,6 +28,7 @@ The idea for this was inspired by the building of a remotely installed RPi that 
 - [ ] investigate service auto-restart?
 - [ ] add a "hello" message when the service starts
 - [ ] code clean-up: abstractions, classes, style etc. the codebase is a mess
+- [ ] etc/tmpfiles.d/pimqtt.conf assum,ed a forced tmp file target, make this more dynamic
 
 
 # commands to listen for:
