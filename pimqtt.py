@@ -88,7 +88,7 @@ def process_trigger(payload):
 
         if CAMERA_ENABLED and camera:
             file_name = 'image_' + str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")) + '.jpg'
-            full file_name = CAMERA_IMAGE_PATH + "/" + file_name
+            full_file_name = CAMERA_IMAGE_PATH + "/" + file_name
             #camera = picamera.PiCamera()
             camera.hflip = False
             camera.vflip = False
