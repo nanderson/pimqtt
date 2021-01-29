@@ -27,6 +27,7 @@ The idea for this was inspired by the building of a remotely installed RPi that 
 - [ ] implement periodic simple health messages
 - [ ] investigate service auto-restart?
 - [ ] add a "hello" message when the service starts
+- [ ] code clean-up: abstractions, classes, style etc. the codebase is a mess
 
 
 # commands to listen for:

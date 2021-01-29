@@ -82,7 +82,7 @@ def process_trigger(payload):
         logging.info("COMMAND: ping")
         response = {}
         response["ping"] = "pong"
-        client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+        client.publish(RESPONSE_TOPIC_BASE + "/ping", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='get-photo':
         logging.info("COMMAND: get-photo")
 
@@ -104,12 +104,12 @@ def process_trigger(payload):
 
             response = {}
             response["get-photo"] = file_name
-            client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+            client.publish(RESPONSE_TOPIC_BASE + "/get-photo", json.dumps(response), mqttQos, mqttRetained)
             logging.info(file_name + ' image published')
         else:
             response = {}
             response["get-photo"] = "disabled"
-            client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+            client.publish(RESPONSE_TOPIC_BASE + "/get-photo", json.dumps(response), mqttQos, mqttRetained)
             logging.info('get-photo disabled')
     elif payload=='status':
         logging.info("COMMAND: status")
@@ -139,7 +139,6 @@ def process_trigger(payload):
                         response["cpu"]["temperatures"][name][entry.label or name]["current"] = f"{entry.current}°F"
                         response["cpu"]["temperatures"][name][entry.label or name]["high"] = f"{entry.high}°F"
                         response["cpu"]["temperatures"][name][entry.label or name]["critical"] = f"{entry.critical}°F"
-
         cpufreq = psutil.cpu_freq()
         response["cpu"]["max_frequency"] = f"{cpufreq.max:.2f}Mhz"
         response["cpu"]["min_frequency"] = f"{cpufreq.min:.2f}Mhz"
@@ -148,6 +147,12 @@ def process_trigger(payload):
             # TO-DO: Make this an array or nested deeper perhaps?
             response["cpu"][f"core_{i}"] = f"{percentage}%"
         response["cpu"]["total_cpu_usage"] = f"{psutil.cpu_percent()}%"
+        
+        load = psutil.getloadavg()
+        response["load"] = {}
+        response["load"]["1min"] = load[0]
+        response["load"]["5min"] = load[1]
+        response["load"]["15min"] = load[2]
 
         svmem = psutil.virtual_memory()
         response["memory"] = {}
@@ -202,21 +207,21 @@ def process_trigger(payload):
         # To-Do: Add picamera status
         # To-Do: Add other temperature sensors
 
-        client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+        client.publish(RESPONSE_TOPIC_BASE + "/status", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='reboot':
         logging.info("COMMAND: reboot")
         response = {}
         response["reboot"] = "To-Do: Implement reboot"
-        client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+        client.publish(RESPONSE_TOPIC_BASE + "/reboot", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='flush-images':
         logging.info("COMMAND: flush-images")
         response = {}
         response["flush-images"] = "To-Do: Implement flush-images"
-        client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+        client.publish(RESPONSE_TOPIC_BASE + "/flush-images", json.dumps(response), mqttQos, mqttRetained)
     else:
         logging.info("COMMAND: -unknown-")
         response = {}
-        client.publish(RESPONSE_TOPIC_BASE, json.dumps(response), mqttQos, mqttRetained)
+        client.publish(RESPONSE_TOPIC_BASE + "/unknown", json.dumps(response), mqttQos, mqttRetained)
 
 
 
