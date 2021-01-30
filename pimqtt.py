@@ -224,6 +224,10 @@ def process_trigger(payload):
         response = {}
         response["flush-images"] = "To-Do: Implement flush-images"
         client.publish(RESPONSE_TOPIC_BASE + "/flush-images", json.dumps(response), mqttQos, mqttRetained)
+    elif payload=='die':
+        logging.info("COMMAND: die")
+        #
+        foo.bar
     else:
         logging.info("COMMAND: -unknown-")
         response = {}
