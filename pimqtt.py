@@ -50,6 +50,7 @@ MQTT_PASSWORD = config.get("mqtt_host","password")
 # MQTT Topics
 COMMAND_TOPIC_BASE = config.get("mqtt_data","command_topic")
 RESPONSE_TOPIC_BASE = config.get("mqtt_data","response_topic")
+WILLANDTESTIMENT_TOPIC_BASE = config.get("mqtt_data","will_and_testiment_topic")
 HEARTBEAT_FREQ_MIN = int(config.get("mqtt_data","heartbeat_frequency"))
 
 # Camera configs
@@ -60,8 +61,6 @@ CAMERA_IMAGE_RETENTION_MIN = int(config.get("pi_camera","image_cache_retention")
 
 mqttQos = 0 
 mqttRetained = False 
-
-uname = platform.uname()
 
 def get_size(bytes, suffix="B"):
     factor = 1024
@@ -226,7 +225,7 @@ def process_trigger(payload):
 
 
 
-def on_connect(mqttc, obj, flags, rc):
+def on_connect(client, obj, flags, rc):
     if rc==0:
         logging.info("connected OK Returned code=%s" % rc)
     else:
@@ -237,7 +236,11 @@ def on_connect(mqttc, obj, flags, rc):
     #3 - refused, service unavailable
     #4 - refused, bad username or password
     #5 - refused, not authorized
-    mqttc.subscribe(COMMAND_TOPIC_BASE) 
+
+    # To-Do: implement last will and testiment
+    client.publish(WILLANDTESTIMENT_TOPIC, payload="Online", qos=0, retain=True)
+
+    client.subscribe(COMMAND_TOPIC_BASE) 
     logging.info("Event Connect: " + str(rc))
 
 def on_message(mqttc, obj, msg):
@@ -247,9 +250,6 @@ def on_message(mqttc, obj, msg):
 
 def on_publish(mqttc, obj, mid):
     logging.info("Event Publish: " + str(mid))
-    #time.sleep(10)
-    #client.disconnect()
-    #client.stop_loop()
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
     logging.info("Event Subscribed: " + str(mid) + " " + str(granted_qos))
@@ -263,6 +263,8 @@ def on_disconnect(mqttc, obj, rc):
 
 uname = platform.uname()
 client_id_random = f"{uname.node}-" + str(random.randint(0, 1000000))
+WILLANDTESTIMENT_TOPIC = WILLANDTESTIMENT_TOPIC_BASE + "/" + uname.node
+
 client = mqtt.Client(client_id=client_id_random, clean_session=True, userdata=None, transport="tcp")
 # if MQTT_AUTH
 client.username_pw_set(username=MQTT_USERNAME, password=MQTT_PASSWORD)  # need this 
@@ -276,13 +278,16 @@ client.on_log = on_log
 
 # if MQTT_TLS
 client.tls_set()
+
+# To-Do: implement last will and testiment
+client.will_set(WILLANDTESTIMENT_TOPIC, payload="Offline", qos=0, retain=True)
 client.connect(MQTT_HOST, port=MQTT_PORT, keepalive=60)
+
+response = {}
+response["hello"] = "pimqqt daemon starting up"
+client.publish(RESPONSE_TOPIC_BASE + "/hello", json.dumps(response), mqttQos, mqttRetained)
+
 client.loop_forever()    #  don't get past this 
-
-
-# For testing only, tke a photo and exit
-#client.loop_start()    #  run in background and free up main thread 
-#post_image() 
 
 client.disconnect()
 client.loop_stop()
