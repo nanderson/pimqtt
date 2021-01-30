@@ -4,6 +4,7 @@
 import paho.mqtt.client as mqtt 
 import paho.mqtt.publish as publish 
 import sys 
+import os
 import random
 import time 
 import logging 
