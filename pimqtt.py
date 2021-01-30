@@ -99,11 +99,16 @@ def process_trigger(payload):
             with open(full_file_name, "rb") as imageFile:
                 myFile = imageFile.read()
                 data = bytearray(myFile)
+            file_stat = os.stat(full_file_name)
 
             client.publish(CAMERA_TOPIC_BASE + "/" + file_name, data, mqttQos, mqttRetained)
 
             response = {}
-            response["get-photo"] = file_name
+            response["get-photo"] = {}
+            response["get-photo"]["file_name"] = file_name
+            response["get-photo"]["full_file_name"] = full_file_name
+            response["get-photo"]["file_size"] = file_stat.st_size
+            response["get-photo"]["file_size_readable"] = f"{get_size(file_stat.st_size)}"
             client.publish(RESPONSE_TOPIC_BASE + "/get-photo", json.dumps(response), mqttQos, mqttRetained)
             logging.info(full_file_name + ' image published')
         else:
