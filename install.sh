@@ -144,7 +144,7 @@ msg "Systemd pimqtt enabled: ${GREEN}CHECK${NOFORMAT}"
 #msg "Systemd pimqtt restarted: ${GREEN}CHECK${NOFORMAT}"
 
 msg "${GREEN}Install Complete${NOFORMAT}"
-msg "Make sure to edit /etc/pimqtt.conf and then ${GREEN}systemctl start pimqtt.service${NOFORMAT}"
+msg "Make sure to edit /etc/pimqtt.conf and then ${GREEN}systemctl restart pimqtt.service${NOFORMAT}"
 
 #msg "${RED}Read parameters:${NOFORMAT}"
 #msg "- flag: ${flag}"
