@@ -1,7 +1,9 @@
 [Unit]
-Description=PicMQTT Service
+Description=PiMQTT Service, basic management via MQTT
 After=multi-user.target
 Conflicts=getty@tty1.service
+;StartLimitIntervalSec=500
+;StartLimitBurst=5
 
 [Service]
 Type=simple
@@ -10,6 +12,8 @@ StandardInput=tty-force
 Environment=PYTHONUNBUFFERED=1
 StandardOutput=syslog+console
 StandardError=syslog+console
+Restart=on-failure
+RestartSec=10s
 
 [Install]
 WantedBy=multi-user.target
