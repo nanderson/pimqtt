@@ -221,12 +221,19 @@ def process_trigger(payload):
         client.publish(RESPONSE_TOPIC_BASE + "/reboot", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='flush-images':
         logging.info("COMMAND: flush-images")
+        
         response = {}
-        response["flush-images"] = "To-Do: Implement flush-images"
+        response["flush-images"] = {}
+        response["flush-images"]["deleted_files"] = []
+        for entry in os.scandir(CAMERA_IMAGE_PATH):
+            if (entry.path.endswith(".jpg") and entry.is_file()):
+                response["flush-images"]["deleted_files"].append(entry.path)
+        #CAMERA_IMAGE_RETENTION_MIN
+
         client.publish(RESPONSE_TOPIC_BASE + "/flush-images", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='die':
         logging.info("COMMAND: die")
-        #
+        # is there a better way to do this un-gracefully?
         foo.bar
     else:
         logging.info("COMMAND: -unknown-")
