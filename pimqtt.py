@@ -229,8 +229,7 @@ def process_trigger(payload):
         for entry in os.scandir(CAMERA_IMAGE_PATH):
             if (entry.path.endswith(".jpg") and entry.is_file()):
                 response["flush-images"]["deleted_files"].append(entry.path)
-                # delete the file
-        #CAMERA_IMAGE_RETENTION_MIN
+                os.remove(entry.path)
 
         client.publish(RESPONSE_TOPIC_BASE + "/flush-images", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='die':
