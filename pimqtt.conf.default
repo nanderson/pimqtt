@@ -22,4 +22,3 @@ image_cache_retention = 5
 mqtt_logging = true
 ; Valid values = CRITICAL ERROR WARNING INFO DEBUG
 log_level = INFO
-mqtt_event_logging = true

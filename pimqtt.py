@@ -69,7 +69,7 @@ CAMERA_IMAGE_RETENTION_MIN = int(config.get("pi_camera","image_cache_retention")
 
 # General configs
 GEN_LOG_LEVEL = config.get("general","log_level")
-GEN_MQTT_EVENT_LOGGING = config.getboolean("general","mqtt_event_logging")
+GEN_MQTT_LOGGING = config.getboolean("general","mqtt_logging")
 
 # re-set the logging levele to what's configured
 #CRITICAL ERROR WARNING INFO DEBUG
@@ -336,7 +336,7 @@ client.on_connect = on_connect
 client.on_publish = on_publish
 client.on_subscribe = on_subscribe
 client.on_disconnect = on_disconnect
-if GEN_MQTT_EVENT_LOGGING:
+if GEN_MQTT_LOGGING:
     client.on_log = on_log
 
 # if MQTT_TLS
