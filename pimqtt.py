@@ -5,6 +5,7 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish 
 import sys 
 import os
+import subprocess
 import random
 import time 
 import logging 
@@ -228,6 +229,7 @@ def process_trigger(payload):
         for entry in os.scandir(CAMERA_IMAGE_PATH):
             if (entry.path.endswith(".jpg") and entry.is_file()):
                 response["flush-images"]["deleted_files"].append(entry.path)
+                # delete the file
         #CAMERA_IMAGE_RETENTION_MIN
 
         client.publish(RESPONSE_TOPIC_BASE + "/flush-images", json.dumps(response), mqttQos, mqttRetained)
@@ -235,6 +237,16 @@ def process_trigger(payload):
         logging.info("COMMAND: die")
         # is there a better way to do this un-gracefully?
         foo.bar
+    elif payload=='logs':
+        logging.info("COMMAND: logs")
+        
+        os_last = subprocess.run(["last"], stdout=subprocess.PIPE, text=True)
+        os_dmesg = subprocess.run(["dmesg", "--ctime", "--color=never"], stdout=subprocess.PIPE, text=True)
+
+        response = {}
+        response["last"] = os_last.stdout
+        response["dmesg"] = os_dmesg.stdout
+        client.publish(RESPONSE_TOPIC_BASE + "/logs", json.dumps(response), mqttQos, mqttRetained)
     else:
         logging.info("COMMAND: -unknown-")
         response = {}
