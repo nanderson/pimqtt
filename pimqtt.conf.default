@@ -1,17 +1,25 @@
 [mqtt_host]
-host = "localhost"
-port = 1234
-auth = true
-username = ""
-password = ""
+host = localhost
+port = 1883
+tls = false
+auth = false
+username = u
+password = p
 
 [mqtt_data]
-command_topic = ""
-response_topic = ""
-heartbeat_frequency = 0
+command_topic = COMMAND/pimqtt
+response_topic = SENSOR/pimqtt/response
+will_and_testiment_topic = SENSOR/will_and_testiment
+heartbeat_frequency = 60
 
 [pi_camera]
-enabled = false
-response_topic = ""
-temp_folder = ""
+enabled = true
+response_topic = SENSOR/pimqtt/data
+temp_folder = /etc/picamera/
 image_cache_retention = 5
+
+[general]
+mqtt_logging = true
+; Valid values = CRITICAL ERROR WARNING INFO DEBUG
+log_level = INFO
+mqtt_event_logging = true

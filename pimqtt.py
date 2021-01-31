@@ -18,14 +18,20 @@ import psutil
 import socket
 import json
 
-logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
+#logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
+log = logging.getLogger('pimqtt')
+log.setLevel(logging.DEBUG)
+log_handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)-15s - %(levelname)s %(module)s: %(message)s')
+log_handler.setFormatter(formatter)
+log.addHandler(log_handler)
 
 try:
     import picamera 
-    logging.info("Successfully imported picamera")
+    log.debug("Successfully imported picamera")
 except ImportError:
     # must not be on a pi or can't find library, need to disable the camera in the config
-    logging.error("Error importing picamera")
+    log.error("Error importing picamera")
     pass
 
 
@@ -34,7 +40,7 @@ try:
 except NameError:
     pass
 except PiCameraError as err:
-    logging.error("Error loading picamera: " + err)
+    log.error("Error loading picamera: " + err)
     camera = False
     pass
 
@@ -61,6 +67,32 @@ CAMERA_TOPIC_BASE = config.get("pi_camera","response_topic")
 CAMERA_IMAGE_PATH = config.get("pi_camera","temp_folder")
 CAMERA_IMAGE_RETENTION_MIN = int(config.get("pi_camera","image_cache_retention"))
 
+# General configs
+GEN_LOG_LEVEL = config.get("general","log_level")
+GEN_MQTT_EVENT_LOGGING = config.getboolean("general","mqtt_event_logging")
+
+# re-set the logging levele to what's configured
+#CRITICAL ERROR WARNING INFO DEBUG
+if GEN_LOG_LEVEL == "DEBUG":
+    log.setLevel(logging.DEBUG)
+    log.debug("Setting log level to DEBUG")
+elif GEN_LOG_LEVEL == "INFO":
+    log.setLevel(logging.INFO)
+    log.debug("Setting log level to INFO")
+elif GEN_LOG_LEVEL == "WARNING":
+    log.setLevel(logging.WARNING)
+    log.debug("Setting log level to WARNING")
+elif GEN_LOG_LEVEL == "ERROR":
+    log.setLevel(logging.ERROR)
+    log.debug("Setting log level to ERROR")
+elif GEN_LOG_LEVEL == "CRITICAL":
+    log.setLevel(logging.CRITICAL)
+    log.debug("Setting log level to CRITICAL")
+else:
+    log.debug("Error, tried setting logging level to: " + GEN_LOG_LEVEL)
+
+
+
 mqttQos = 0 
 mqttRetained = False 
 
@@ -78,14 +110,14 @@ af_map = {
 }
 
 def process_trigger(payload): 
-    logging.info('ON triggered') 
+    log.debug('ON triggered') 
     if payload=='ping':
-        logging.info("COMMAND: ping")
+        log.debug("COMMAND: ping")
         response = {}
         response["ping"] = "pong"
         client.publish(RESPONSE_TOPIC_BASE + "/ping", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='get-photo':
-        logging.info("COMMAND: get-photo")
+        log.debug("COMMAND: get-photo")
 
         if CAMERA_ENABLED and camera:
             file_name = 'image_' + str(datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")) + '.jpg'
@@ -112,14 +144,14 @@ def process_trigger(payload):
             response["get-photo"]["file_size"] = file_stat.st_size
             response["get-photo"]["file_size_readable"] = f"{get_size(file_stat.st_size)}"
             client.publish(RESPONSE_TOPIC_BASE + "/get-photo", json.dumps(response), mqttQos, mqttRetained)
-            logging.info(full_file_name + ' image published')
+            log.debug(full_file_name + ' image published')
         else:
             response = {}
             response["get-photo"] = "disabled"
             client.publish(RESPONSE_TOPIC_BASE + "/get-photo", json.dumps(response), mqttQos, mqttRetained)
-            logging.info('get-photo disabled')
+            log.debug('get-photo disabled')
     elif payload=='status':
-        logging.info("COMMAND: status")
+        log.debug("COMMAND: status")
         response = {}
         response["system"] = uname.system
         response["node_name"] = uname.node
@@ -216,12 +248,12 @@ def process_trigger(payload):
 
         client.publish(RESPONSE_TOPIC_BASE + "/status", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='reboot':
-        logging.info("COMMAND: reboot")
+        log.debug("COMMAND: reboot")
         response = {}
         response["reboot"] = "To-Do: Implement reboot"
         client.publish(RESPONSE_TOPIC_BASE + "/reboot", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='flush-images':
-        logging.info("COMMAND: flush-images")
+        log.debug("COMMAND: flush-images")
         
         response = {}
         response["flush-images"] = {}
@@ -233,21 +265,23 @@ def process_trigger(payload):
 
         client.publish(RESPONSE_TOPIC_BASE + "/flush-images", json.dumps(response), mqttQos, mqttRetained)
     elif payload=='die':
-        logging.info("COMMAND: die")
+        log.deebug("COMMAND: die")
         # is there a better way to do this un-gracefully?
         foo.bar
     elif payload=='logs':
-        logging.info("COMMAND: logs")
+        log.debug("COMMAND: logs")
         
-        os_last = subprocess.run(["last"], stdout=subprocess.PIPE, text=True)
-        os_dmesg = subprocess.run(["dmesg", "--ctime", "--color=never"], stdout=subprocess.PIPE, text=True)
+        os_last = subprocess.run(["last", "--system"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, capture_output=True, text=True)
+        os_dmesg = subprocess.run(["dmesg", "--ctime", "--color=never"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, capture_output=True, text=True)
+        os_journalctl = subprocess.run(["journalctl", "--no-pager", "--lines=100", "--unit=pimqtt"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, capture_output=True, text=True)
 
         response = {}
         response["last"] = os_last.stdout
         response["dmesg"] = os_dmesg.stdout
+        response["journalctl"] = os_journalctl.stdout
         client.publish(RESPONSE_TOPIC_BASE + "/logs", json.dumps(response), mqttQos, mqttRetained)
     else:
-        logging.info("COMMAND: -unknown-")
+        log.debug("COMMAND: -unknown-")
         response = {}
         client.publish(RESPONSE_TOPIC_BASE + "/unknown", json.dumps(response), mqttQos, mqttRetained)
 
@@ -255,9 +289,9 @@ def process_trigger(payload):
 
 def on_connect(client, obj, flags, rc):
     if rc==0:
-        logging.info("connected OK Returned code=%s" % rc)
+        log.info("connected OK Returned code=%s" % rc)
     else:
-        logging.info("Bad connection Returned code= %s " % rc)
+        log.info("Bad connection Returned code= %s " % rc)
     #0 - success, connection accepted
     #1 - connection refused, bad protocol
     #2 - refused, client-id error
@@ -273,20 +307,20 @@ def on_connect(client, obj, flags, rc):
 
 def on_message(mqttc, obj, msg):
     payload = str(msg.payload.decode('ascii'))  # decode the binary string 
-    logging.info("Event Message: " + msg.topic + " " + str(msg.qos) + " " + payload)
+    log.debug("Event Message: " + msg.topic + " " + str(msg.qos) + " " + payload)
     process_trigger(payload) 
 
 def on_publish(mqttc, obj, mid):
-    logging.info("Event Publish: " + str(mid))
+    log.debug("Event Publish: " + str(mid))
 
 def on_subscribe(mqttc, obj, mid, granted_qos):
-    logging.info("Event Subscribed: " + str(mid) + " " + str(granted_qos))
+    log.debug("Event Subscribed: " + str(mid) + " " + str(granted_qos))
 
 def on_log(mqttc, obj, level, string):
-    logging.info("Event Log: " + string)
+    log.info("Event Log: " + string)
 
 def on_disconnect(mqttc, obj, rc):
-    logging.info("Event Disconnect: %s" % rc)
+    log.error("Event Disconnect: %s" % rc)
 
 
 uname = platform.uname()
@@ -302,7 +336,8 @@ client.on_connect = on_connect
 client.on_publish = on_publish
 client.on_subscribe = on_subscribe
 client.on_disconnect = on_disconnect
-client.on_log = on_log
+if GEN_MQTT_EVENT_LOGGING:
+    client.on_log = on_log
 
 # if MQTT_TLS
 client.tls_set()
