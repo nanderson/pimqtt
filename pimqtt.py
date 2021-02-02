@@ -20,7 +20,7 @@ import json
 
 #logging.basicConfig(level=logging.DEBUG, datefmt='%Y-%m-%d %H:%M:%S', format='%(asctime)-15s - [%(levelname)s] %(module)s: %(message)s', ) 
 log = logging.getLogger('pimqtt')
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.CRITICAL)
 log_handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)-15s - %(levelname)s %(module)s: %(message)s')
 log_handler.setFormatter(formatter)
@@ -271,14 +271,22 @@ def process_trigger(payload):
     elif payload=='logs':
         log.debug("COMMAND: logs")
         
-        os_last = subprocess.run(["last", "--system"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, capture_output=True, text=True)
-        os_dmesg = subprocess.run(["dmesg", "--ctime", "--color=never"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, capture_output=True, text=True)
-        os_journalctl = subprocess.run(["journalctl", "--no-pager", "--lines=100", "--unit=pimqtt"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, capture_output=True, text=True)
-
         response = {}
+        
+        os_last = subprocess.run(["last", "-100"], capture_output=True, text=True)
         response["last"] = os_last.stdout
+
+        os_dmesg = subprocess.run(["dmesg"], capture_output=True, text=True)
         response["dmesg"] = os_dmesg.stdout
-        response["journalctl"] = os_journalctl.stdout
+
+        try:
+            os_journalctl = subprocess.run(["journalctl", "--no-pager", "--lines=100", "--unit=pimqtt"], capture_output=True, text=True)
+            response["journalctl"] = os_journalctl.stdout
+        except FileNotFoundError:
+            log.debug("Error runing journalctl, must not be running systemd")
+            pass
+
+
         client.publish(RESPONSE_TOPIC_BASE + "/logs", json.dumps(response), mqttQos, mqttRetained)
     else:
         log.debug("COMMAND: -unknown-")
