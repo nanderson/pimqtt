@@ -12,9 +12,9 @@ The idea for this was inspired by the building of a remotely installed RPi that 
 
 
 # Installation
+- apt-get install rpi.gpio python3 python3-pip
 - sudo install.sh
 - edit /etc/pimqtt.conf
-- apt-get install rpi.gpio
 - systemctl start pimqtt.service
 
 

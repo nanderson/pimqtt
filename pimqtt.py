@@ -273,14 +273,14 @@ def process_trigger(payload):
         
         response = {}
         
-        os_last = subprocess.run(["last", "-100"], capture_output=True, text=True)
+        os_last = subprocess.run(["last", "-100"], capture_output=True, text=True, bufsize=0)
         response["last"] = os_last.stdout
 
-        os_dmesg = subprocess.run(["dmesg"], capture_output=True, text=True)
+        os_dmesg = subprocess.run(["dmesg"], capture_output=True, text=True, bufsize=0)
         response["dmesg"] = os_dmesg.stdout
 
         try:
-            os_journalctl = subprocess.run(["journalctl", "--no-pager", "--lines=100", "--unit=pimqtt"], capture_output=True, text=True)
+            os_journalctl = subprocess.run(["journalctl", "--no-pager", "--lines=100", "--unit=pimqtt"], capture_output=True, text=True, bufsize=0)
             response["journalctl"] = os_journalctl.stdout
         except FileNotFoundError:
             log.debug("Error runing journalctl, must not be running systemd")
@@ -307,8 +307,9 @@ def on_connect(client, obj, flags, rc):
     #4 - refused, bad username or password
     #5 - refused, not authorized
 
-    # To-Do: implement last will and testiment
-    client.publish(WILLANDTESTIMENT_TOPIC, payload="Online", qos=0, retain=True)
+    response = {}
+    response["status"] = "Online"
+    client.publish(WILLANDTESTIMENT_TOPIC, payload=json.dumps(response), qos=0, retain=True)
 
     client.subscribe(COMMAND_TOPIC_BASE) 
     logging.info("Event Connect: " + str(rc))
@@ -351,7 +352,9 @@ if GEN_MQTT_LOGGING:
 client.tls_set()
 
 # To-Do: implement last will and testiment
-client.will_set(WILLANDTESTIMENT_TOPIC, payload="Offline", qos=0, retain=True)
+response = {}
+response["status"] = "Offline"
+client.will_set(WILLANDTESTIMENT_TOPIC, json.dumps(response), qos=0, retain=True)
 client.connect(MQTT_HOST, port=MQTT_PORT, keepalive=60)
 
 response = {}
