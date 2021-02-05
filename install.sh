@@ -82,6 +82,7 @@ setup_colors
 
 SYSTEMD_DIR="/lib/systemd/system"
 SYSTEMD_CONFIG="systemd/pimqtt.service"
+TMP_DIR="/tmp/pimqtt"
 
 ###################
 
@@ -127,6 +128,14 @@ msg "    Make sure to edit /etc/pimqtt.conf before starting the service"
 
 cp etc/tmpfiles.d/pimqtt.conf /etc/tmpfiles.d/
 msg "tmpfiles.d/pimqtt.conf copied: ${GREEN}CHECK${NOFORMAT}"
+
+if [ ! -d $TMP_DIR ] 
+then
+  mkdir $TMP_DIR
+  msg "Making $TMP_DIR : ${GREEN}CHECK${NOFORMAT}"
+else
+  msg "$TMP_DIR already exists : ${GREEN}CHECK${NOFORMAT}"
+fi
 
 pip3 install paho-mqtt picamera psutil
 msg "pip3 requirements installed: ${GREEN}CHECK${NOFORMAT}"
