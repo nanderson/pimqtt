@@ -129,8 +129,8 @@ def process_trigger(payload):
             camera.led = False
             # Valid values are 0, 90, 180, and 270
             camera.rotation = 0
-            camera.resolution = (1024, 768)
-            #camera.resolution = (2592, 1944)
+            #camera.resolution = (1024, 768)
+            camera.resolution = (2592, 1944)
             camera.capture(full_file_name)
             with open(full_file_name, "rb") as imageFile:
                 myFile = imageFile.read()
